@@ -66,24 +66,29 @@ class Player(pygame.sprite.Sprite):
 class Obstacle(pygame.sprite.Sprite):
 	def __init__(self,type):
 		super().__init__()
+		self.obs_type = type
+		self.going_down = True
 		
 		if type == 'fly':
 			fly_1 = pygame.image.load('graphics/fly/fly1.png').convert_alpha()
 			fly_2 = pygame.image.load('graphics/fly/fly2.png').convert_alpha()
 			self.frames = [fly_1,fly_2]
-			y_pos = 210
-			
+			y_pos = choice([140,260])
 		elif type == 'bee':
 			bee_1 = pygame.image.load('graphics/bee/bee1.png').convert_alpha()
 			bee_2 = pygame.image.load('graphics/bee/bee2.png').convert_alpha()
 			self.frames = [bee_1,bee_2]
 			y_pos = 240
-
-		else:
+		elif type == 'snail':
 			snail_1 = pygame.image.load('graphics/snail/snail1.png').convert_alpha()
 			snail_2 = pygame.image.load('graphics/snail/snail2.png').convert_alpha()
 			self.frames = [snail_1,snail_2]
 			y_pos  = 300
+		else:
+			mfly_1 = pygame.image.load('graphics/fly/fly1.png').convert_alpha()
+			mfly_2 = pygame.image.load('graphics/fly/fly2.png').convert_alpha()
+			self.frames = [mfly_1,mfly_2]
+			y_pos = 210
 
 		self.animation_index = 0
 		self.image = self.frames[self.animation_index]
@@ -97,11 +102,25 @@ class Obstacle(pygame.sprite.Sprite):
 	def update(self):
 		self.animation_state()
 		self.rect.x -= 6
+
+		# make fly move up and down
+		if(self.obs_type == 'fly'):
+			if self.rect.y == 260:
+				self.going_down = False
+			elif self.rect.y == 140:
+				self.going_down = True
+
+			if self.going_down:
+				self.rect.y += 1
+			elif not self.going_down:
+				self.rect.y -= 1
+				
 		self.destroy()
 
 	def destroy(self):
 		if self.rect.x <= -100: 
 			self.kill()
+	
 
 def display_score():
 	current_time = int(pygame.time.get_ticks() / 1000) - start_time
@@ -128,7 +147,7 @@ score = 0
 
 # MUSIC
 bg_music = pygame.mixer.Sound('audio/music.wav')
-bg_music.set_volume(0.05)
+bg_music.set_volume(0.02)
 bg_music.play(loops = -1)
 
 # GROUPS
@@ -179,7 +198,8 @@ while True:
 
 		if game_active:
 			if event.type == obstacle_timer:
-				obstacle_group.add(Obstacle(choice(['fly','bee','snail','snail'])))
+				obstacle_group.add(Obstacle(choice(['fly','bee','snail'])))
+				
 		
 		else:
 			if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:

@@ -102,25 +102,25 @@ class Obstacle(pygame.sprite.Sprite):
 	def update(self):
 		self.animation_state()
 		self.rect.x -= 6
-
-		# make fly move up and down
 		if(self.obs_type == 'fly'):
-			if self.rect.y == 260:
-				self.going_down = False
-			elif self.rect.y == 140:
-				self.going_down = True
-
-			if self.going_down:
-				self.rect.y += 1
-			elif not self.going_down:
-				self.rect.y -= 1
-				
+			self.update_move_y()
 		self.destroy()
 
 	def destroy(self):
 		if self.rect.x <= -100: 
 			self.kill()
-	
+
+	# update obstascle moving in y axis
+	def update_move_y(self):
+		if self.rect.y == 260:
+			self.going_down = False
+		elif self.rect.y == 140:
+			self.going_down = True
+
+		if self.going_down:
+			self.rect.y += 1
+		elif not self.going_down:
+			self.rect.y -= 1
 
 def display_score():
 	current_time = int(pygame.time.get_ticks() / 1000) - start_time
@@ -142,6 +142,7 @@ pygame.display.set_caption('Runner')
 clock = pygame.time.Clock()
 test_font = pygame.font.Font('font/Pixeltype.ttf', 50)
 game_active = False
+game_snow = False
 start_time = 0
 score = 0
 
@@ -156,17 +157,20 @@ player.add(Player())
 
 obstacle_group = pygame.sprite.Group()
 
+
+
 # BACKGROUND
 ### GROUND
-# ground_surface = pygame.image.load('graphics/ground.png').convert()
-ground_surface_1 = pygame.image.load('graphics/infiniteSnowGround.png').convert()
-ground_surface_2 = pygame.image.load('graphics/infiniteSnowGround.png').convert()
+ground_type = 'graphics/infiniteSnowGround.png' if game_snow else 'graphics/ground.png'
+ground_surface_1 = pygame.image.load(ground_type).convert()
+ground_surface_2 = pygame.image.load(ground_type).convert()
 ground_surf_rect_1 = ground_surface_1.get_rect(topleft = (0,300))
 ground_surf_rect_2 = ground_surface_2.get_rect(topleft = (786,300))
 ### SKY
 # sky_surface = pygame.image.load('graphics/Sky.png').convert()
-sky_surface_1 = pygame.image.load('graphics/infiniteNightSky.png').convert()
-sky_surface_2 = pygame.image.load('graphics/infiniteNightSky.png').convert()
+sky_time = choice(['graphics/infiniteNightSky.png','graphics/infiniteSky.png'])
+sky_surface_1 = pygame.image.load(sky_time).convert()
+sky_surface_2 = pygame.image.load(sky_time).convert()
 sky_surf_rect_1 = sky_surface_1.get_rect(left = 0)
 sky_surf_rect_2 = sky_surface_2.get_rect(left = 800)
 ### SNOW (Optional)
@@ -207,6 +211,7 @@ while True:
 				start_time = int(pygame.time.get_ticks() / 1000)
 
 
+
 	if game_active:
 		# SKY
 		sky_surf_rect_1.left -= 1
@@ -220,14 +225,15 @@ while True:
 		# screen.blit(sky_surface,(0,0))
 
 		# SNOW
-		snow_rect_1.top += 1
-		snow_rect_2.top += 1
-		if snow_rect_1.top >= 300:
-			snow_rect_1.bottom = 0
-		if snow_rect_2.top >= 300:
-			snow_rect_2.bottom = 0
-		screen.blit(snow_surface_1,snow_rect_1)
-		screen.blit(snow_surface_2,snow_rect_2)
+		if game_snow:
+			snow_rect_1.top += 1
+			snow_rect_2.top += 1
+			if snow_rect_1.top >= 300:
+				snow_rect_1.bottom = 0
+			if snow_rect_2.top >= 300:
+				snow_rect_2.bottom = 0
+			screen.blit(snow_surface_1,snow_rect_1)
+			screen.blit(snow_surface_2,snow_rect_2)
 
 		# GROUND
 		ground_surf_rect_1.left -= 2

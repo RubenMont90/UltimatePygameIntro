@@ -20,17 +20,24 @@ class Player(pygame.sprite.Sprite):
 		self.crouch_index = 0
 
 		self.image = self.player_walk[self.player_index]
-		self.rect = self.image.get_rect(midbottom = (80,300))
+		self.rect = self.image.get_rect(midbottom = (100,300))
 		self.gravity = 0
 
 		self.jump_sound = pygame.mixer.Sound('audio/jump.mp3')
 		self.jump_sound.set_volume(0.05)
 
 	def player_input(self):
-		keys = pygame.key.get_pressed()
+		keys = pygame.key.get_pressed() 
 		if keys[pygame.K_SPACE] and self.rect.bottom >= 300:
 			self.gravity = -20
 			self.jump_sound.play()
+
+		# add movement for player x axis
+		#self.rect.x += 32
+		# if keys[pygame.K_RIGHT]:
+		# 	self.rect.x += 35
+		# if keys[pygame.K_LEFT]:
+		# 	self.rect.x -= 35
 
 	def apply_gravity(self):
 		self.gravity += 1
@@ -50,13 +57,15 @@ class Player(pygame.sprite.Sprite):
 			if self.crouch_index >= len(self.player_crouch):
 				self.crouch_index = 0
 			self.image = self.player_crouch[int(self.crouch_index)]
-			self.rect = self.image.get_rect(midbottom = (80,300))
+			self.rect = self.image.get_rect(midbottom = (100,300))
+			#self.rect = self.image.get_rect(midbottom = (self.rect.x,300)) #move player on x axis
 		else:
 			self.player_index += 0.1
 			if self.player_index >= len(self.player_walk):
 				self.player_index = 0
 			self.image = self.player_walk[int(self.player_index)]
-			self.rect = self.image.get_rect(midbottom = (80,300))
+			self.rect = self.image.get_rect(midbottom = (100,300))
+			#self.rect = self.image.get_rect(midbottom = (self.rect.x,300)) #move player on x axis
 
 	def update(self):
 		self.player_input()
@@ -84,11 +93,13 @@ class Obstacle(pygame.sprite.Sprite):
 			snail_2 = pygame.image.load('graphics/snail/snail2.png').convert_alpha()
 			self.frames = [snail_1,snail_2]
 			y_pos  = 300
-		else:
-			mfly_1 = pygame.image.load('graphics/fly/fly1.png').convert_alpha()
-			mfly_2 = pygame.image.load('graphics/fly/fly2.png').convert_alpha()
-			self.frames = [mfly_1,mfly_2]
+		elif type == 'superfly':
+			sfly_1 = pygame.image.load('graphics/superfly/superfly1.png').convert_alpha()
+			sfly_2 = pygame.image.load('graphics/superfly/superfly2.png').convert_alpha()
+			self.frames = [sfly_1,sfly_2]
 			y_pos = 210
+		else:
+			print("DEFAULT")
 
 		self.animation_index = 0
 		self.image = self.frames[self.animation_index]
@@ -103,7 +114,9 @@ class Obstacle(pygame.sprite.Sprite):
 		self.animation_state()
 		self.rect.x -= 6
 		if(self.obs_type == 'fly'):
-			self.update_move_y()
+			self.update_move_y(1)
+		if(self.obs_type == 'superfly'):
+			self.update_move_y(5)
 		self.destroy()
 
 	def destroy(self):
@@ -111,16 +124,16 @@ class Obstacle(pygame.sprite.Sprite):
 			self.kill()
 
 	# update obstascle moving in y axis
-	def update_move_y(self):
+	def update_move_y(self,increment):
 		if self.rect.y == 260:
 			self.going_down = False
 		elif self.rect.y == 140:
 			self.going_down = True
 
 		if self.going_down:
-			self.rect.y += 1
+			self.rect.y += increment
 		elif not self.going_down:
-			self.rect.y -= 1
+			self.rect.y -= increment
 
 def display_score():
 	current_time = int(pygame.time.get_ticks() / 1000) - start_time
@@ -142,7 +155,7 @@ pygame.display.set_caption('Runner')
 clock = pygame.time.Clock()
 test_font = pygame.font.Font('font/Pixeltype.ttf', 50)
 game_active = False
-game_snow = False
+game_snow = choice([False,True])
 start_time = 0
 score = 0
 
@@ -156,8 +169,6 @@ player = pygame.sprite.GroupSingle()
 player.add(Player())
 
 obstacle_group = pygame.sprite.Group()
-
-
 
 # BACKGROUND
 ### GROUND
@@ -178,7 +189,6 @@ snow_surface_1 = pygame.image.load('graphics/snow.png').convert_alpha()
 snow_surface_2 = pygame.image.load('graphics/snow.png').convert_alpha()
 snow_rect_1 = snow_surface_1.get_rect(top = 0)
 snow_rect_2 = snow_surface_2.get_rect(top = -300)
-
 # INTRO SCREEN
 player_stand = pygame.image.load('graphics/player/player_stand.png').convert_alpha()
 player_stand = pygame.transform.rotozoom(player_stand,0,2)
@@ -194,6 +204,7 @@ game_message_rect = game_message.get_rect(center = (400,330))
 obstacle_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(obstacle_timer,1500)
 
+#game logic
 while True:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -202,15 +213,13 @@ while True:
 
 		if game_active:
 			if event.type == obstacle_timer:
-				obstacle_group.add(Obstacle(choice(['fly','bee','snail'])))
+				obstacle_group.add(Obstacle(choice(['fly','bee','snail','superfly'])))
 				
 		
-		else:
+		else: 
 			if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
 				game_active = True
 				start_time = int(pygame.time.get_ticks() / 1000)
-
-
 
 	if game_active:
 		# SKY

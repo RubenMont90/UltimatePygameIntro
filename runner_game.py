@@ -114,9 +114,9 @@ class Obstacle(pygame.sprite.Sprite):
 		self.animation_state()
 		self.rect.x -= 6
 		if(self.obs_type == 'fly'):
-			self.update_move_y(1)
+			self.update_move_y(1,140,260)
 		if(self.obs_type == 'superfly'):
-			self.update_move_y(5)
+			self.update_move_y(2,140,260)
 		self.destroy()
 
 	def destroy(self):
@@ -124,10 +124,10 @@ class Obstacle(pygame.sprite.Sprite):
 			self.kill()
 
 	# update obstascle moving in y axis
-	def update_move_y(self,increment):
-		if self.rect.y == 260:
+	def update_move_y(self,increment,min,max):
+		if self.rect.y == max:
 			self.going_down = False
-		elif self.rect.y == 140:
+		elif self.rect.y == min:
 			self.going_down = True
 
 		if self.going_down:
@@ -214,8 +214,6 @@ while True:
 		if game_active:
 			if event.type == obstacle_timer:
 				obstacle_group.add(Obstacle(choice(['fly','bee','snail','superfly'])))
-				
-		
 		else: 
 			if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
 				game_active = True
@@ -264,7 +262,6 @@ while True:
 		obstacle_group.update()
 
 		game_active = collision_sprite()
-		
 	else:
 		screen.fill((94,129,162))
 		screen.blit(player_stand,player_stand_rect)

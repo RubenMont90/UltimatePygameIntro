@@ -73,6 +73,9 @@ class Player(pygame.sprite.Sprite):
 		self.animation_state()
 
 class Obstacle(pygame.sprite.Sprite):
+	
+
+
 	def __init__(self,type):
 		super().__init__()
 		self.obs_type = type
@@ -82,7 +85,7 @@ class Obstacle(pygame.sprite.Sprite):
 			fly_1 = pygame.image.load('graphics/fly/fly1.png').convert_alpha()
 			fly_2 = pygame.image.load('graphics/fly/fly2.png').convert_alpha()
 			self.frames = [fly_1,fly_2]
-			y_pos = choice([140,260])
+			y_pos = randint(0,130)*2
 		elif type == 'bee':
 			bee_1 = pygame.image.load('graphics/bee/bee1.png').convert_alpha()
 			bee_2 = pygame.image.load('graphics/bee/bee2.png').convert_alpha()
@@ -97,7 +100,12 @@ class Obstacle(pygame.sprite.Sprite):
 			sfly_1 = pygame.image.load('graphics/superfly/superfly1.png').convert_alpha()
 			sfly_2 = pygame.image.load('graphics/superfly/superfly2.png').convert_alpha()
 			self.frames = [sfly_1,sfly_2]
-			y_pos = 210
+			y_pos = randint(0,20) * 5
+		elif type == 'mole':
+			mole_1 = pygame.image.load('graphics/mole/mole_75.png').convert_alpha()
+			mole_2 = pygame.image.load('graphics/mole/mole_75.png').convert_alpha()
+			self.frames = [mole_1,mole_2]
+			y_pos = randint(48,66) * 5
 		else:
 			print("DEFAULT")
 
@@ -112,11 +120,15 @@ class Obstacle(pygame.sprite.Sprite):
 
 	def update(self):
 		self.animation_state()
-		self.rect.x -= 6
+		self.rect.x -= 6 #movement x axis
 		if(self.obs_type == 'fly'):
-			self.update_move_y(1,140,260)
+			self.update_move_y(2,0,260)
 		if(self.obs_type == 'superfly'):
-			self.update_move_y(2,140,260)
+			self.update_move_y(5,0,200)
+		if(self.obs_type == 'mole'):
+			self.update_move_y(5,240,330)
+		
+			
 		self.destroy()
 
 	def destroy(self):
@@ -125,15 +137,19 @@ class Obstacle(pygame.sprite.Sprite):
 
 	# update obstascle moving in y axis
 	def update_move_y(self,increment,min,max):
-		if self.rect.y == max:
-			self.going_down = False
-		elif self.rect.y == min:
-			self.going_down = True
+		# if self.rect.y == max:
+		# 	self.going_down = False
+		# elif self.rect.y == min:
+		# 	self.going_down = True
+			
+		if self.rect.y in (min, max):
+			self.going_down = self.rect.y == min
 
-		if self.going_down:
-			self.rect.y += increment
-		elif not self.going_down:
-			self.rect.y -= increment
+		# if self.going_down:
+		# 	self.rect.y += increment
+		# elif not self.going_down:
+		# 	self.rect.y -= increment
+		self.rect.y += increment if self.going_down else -increment
 
 def display_score():
 	current_time = int(pygame.time.get_ticks() / 1000) - start_time
@@ -147,7 +163,6 @@ def collision_sprite():
 		obstacle_group.empty()
 		return False
 	else: return True
-
 
 pygame.init()
 screen = pygame.display.set_mode((800,400))
@@ -175,8 +190,8 @@ obstacle_group = pygame.sprite.Group()
 ground_type = 'graphics/infiniteSnowGround.png' if game_snow else 'graphics/ground.png'
 ground_surface_1 = pygame.image.load(ground_type).convert()
 ground_surface_2 = pygame.image.load(ground_type).convert()
-ground_surf_rect_1 = ground_surface_1.get_rect(topleft = (0,300))
-ground_surf_rect_2 = ground_surface_2.get_rect(topleft = (786,300))
+ground_surf_rect_1 = ground_surface_1.get_rect(topleft = (0,300)) # SIZE:300x785
+ground_surf_rect_2 = ground_surface_2.get_rect(topleft = (786,300)) #SIZE:300x785
 ### SKY
 # sky_surface = pygame.image.load('graphics/Sky.png').convert()
 sky_time = choice(['graphics/infiniteNightSky.png','graphics/infiniteSky.png'])
@@ -213,7 +228,7 @@ while True:
 
 		if game_active:
 			if event.type == obstacle_timer:
-				obstacle_group.add(Obstacle(choice(['fly','bee','snail','superfly'])))
+				obstacle_group.add(Obstacle(choice(['fly','bee','snail','superfly','mole'])))
 		else: 
 			if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
 				game_active = True
